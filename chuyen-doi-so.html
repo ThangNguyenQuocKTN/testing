@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chuyển Đổi Số</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:      #0A0F1E;
+    --paper:    #F5F4F0;
+    --blue:     #1A56FF;
+    --cyan:     #00D4FF;
+    --accent:   #FF3C5F;
+    --muted:    #8A8FA8;
+    --card-bg:  rgba(255,255,255,0.06);
+    --card-br:  rgba(255,255,255,0.10);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background: var(--ink);
+    color: #fff;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── SLIDE CONTAINER ── */
+  #deck {
+    position: relative;
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 80px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(40px);
+    transition: opacity .55s cubic-bezier(.4,0,.2,1),
+                transform .55s cubic-bezier(.4,0,.2,1);
+  }
+  .slide.active {
+    opacity: 1; pointer-events: all; transform: translateY(0);
+  }
+  .slide.out {
+    opacity: 0; transform: translateY(-40px);
+  }
+
+  /* ── GRID LINES BG ── */
+  .slide::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(26,86,255,.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26,86,255,.07) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* ── SLIDE 1 — COVER ── */
+  #s1 { text-align: center; }
+  #s1 .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: .25em;
+    color: var(--cyan); text-transform: uppercase; margin-bottom: 24px;
+  }
+  #s1 h1 {
+    font-size: clamp(52px, 8vw, 96px);
+    font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, #fff 30%, var(--cyan) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 28px;
+  }
+  #s1 h1 span { color: var(--blue); -webkit-text-fill-color: var(--blue); }
+  #s1 .sub {
+    font-size: 18px; color: var(--muted); font-weight: 300; max-width: 560px; line-height: 1.7;
+  }
+  #s1 .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  #s1 .orb1 { width:500px;height:500px; background:rgba(26,86,255,.25); top:-100px;right:-100px; }
+  #s1 .orb2 { width:400px;height:400px; background:rgba(0,212,255,.15); bottom:-80px;left:-80px; }
+
+  /* ── SLIDE 2 — WHAT IS ── */
+  #s2 .inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px; align-items: center; width: 100%; max-width: 1100px;
+  }
+  #s2 .left h2 { font-size: 42px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; }
+  #s2 .left h2 em { font-style:normal; color: var(--cyan); }
+  #s2 .left p { font-size: 16px; line-height: 1.8; color: #BEC3D4; }
+  #s2 .right { display:flex; flex-direction:column; gap:16px; }
+  .def-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-br);
+    border-radius: 14px;
+    padding: 20px 24px;
+    backdrop-filter: blur(10px);
+    transition: border-color .2s;
+  }
+  .def-card:hover { border-color: var(--blue); }
+  .def-card .icon { font-size: 26px; margin-bottom: 8px; }
+  .def-card strong { display:block; font-size:15px; font-weight:700; margin-bottom:6px; }
+  .def-card span { font-size:13px; color:#9DA4BE; line-height:1.6; }
+
+  /* ── SLIDE 3 — PILLARS ── */
+  #s3 { text-align: center; }
+  #s3 h2 { font-size: 42px; font-weight: 800; margin-bottom: 12px; }
+  #s3 .tagline { font-size: 15px; color: var(--muted); margin-bottom: 48px; }
+  #s3 .pillars { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; max-width: 1000px; }
+  .pillar {
+    background: var(--card-bg);
+    border: 1px solid var(--card-br);
+    border-radius: 18px;
+    padding: 32px 20px;
+    position: relative; overflow: hidden;
+    transition: transform .2s, border-color .2s;
+  }
+  .pillar:hover { transform: translateY(-6px); border-color: var(--blue); }
+  .pillar::after {
+    content:''; position:absolute; bottom:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+    border-radius: 0 0 18px 18px;
+  }
+  .pillar .num { font-size:11px; font-weight:700; letter-spacing:.2em; color:var(--cyan); margin-bottom:14px; }
+  .pillar .ico { font-size: 34px; margin-bottom: 14px; }
+  .pillar h3 { font-size:15px; font-weight:700; margin-bottom:8px; }
+  .pillar p { font-size:12.5px; color:#9DA4BE; line-height:1.65; }
+
+  /* ── SLIDE 4 — BENEFITS ── */
+  #s4 .inner { display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; max-width:1100px; width:100%; }
+  #s4 .left h2 { font-size:42px; font-weight:800; line-height:1.15; margin-bottom:16px; }
+  #s4 .left h2 em { font-style:normal; color:var(--accent); }
+  #s4 .left p { font-size:15px; color:#BEC3D4; line-height:1.8; }
+  #s4 .right { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-br);
+    border-radius: 14px;
+    padding: 24px 20px;
+    text-align: center;
+  }
+  .stat-card .val { font-size: 36px; font-weight: 900; color: var(--cyan); line-height: 1; }
+  .stat-card .lbl { font-size: 12px; color: #9DA4BE; margin-top: 8px; line-height: 1.5; }
+
+  /* ── SLIDE 5 — ROADMAP ── */
+  #s5 { text-align: center; }
+  #s5 h2 { font-size: 42px; font-weight: 800; margin-bottom: 12px; }
+  #s5 .tagline { font-size:15px; color:var(--muted); margin-bottom: 48px; }
+  #s5 .road { display:flex; gap:0; max-width:960px; width:100%; position:relative; }
+  #s5 .road::before {
+    content:''; position:absolute; top:36px; left:10%; right:10%;
+    height:2px; background: linear-gradient(90deg, var(--blue), var(--cyan));
+  }
+  .step {
+    flex: 1; display:flex; flex-direction:column; align-items:center;
+    gap: 14px; padding: 0 10px;
+  }
+  .step .dot {
+    width:72px; height:72px; border-radius:50%;
+    background: var(--ink);
+    border: 2px solid var(--blue);
+    display:flex; align-items:center; justify-content:center;
+    font-size: 26px;
+    position: relative; z-index:1;
+    transition: background .2s;
+  }
+  .step:hover .dot { background: var(--blue); }
+  .step h4 { font-size:13px; font-weight:700; text-align:center; }
+  .step p { font-size:11.5px; color:#9DA4BE; line-height:1.6; text-align:center; }
+
+  /* ── SLIDE 6 — CTA ── */
+  #s6 { text-align: center; }
+  #s6 .orb3 { position:absolute;width:600px;height:600px;background:rgba(26,86,255,.2);border-radius:50%;filter:blur(100px);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none; }
+  #s6 .badge {
+    display:inline-flex; align-items:center; gap:8px;
+    background: rgba(26,86,255,.18); border:1px solid rgba(26,86,255,.4);
+    border-radius: 100px; padding: 8px 20px;
+    font-size: 12px; font-weight: 600; letter-spacing: .12em; color: var(--cyan);
+    text-transform: uppercase; margin-bottom: 32px;
+  }
+  #s6 h2 { font-size: clamp(40px,6vw,72px); font-weight: 900; line-height: 1.1; margin-bottom: 24px; }
+  #s6 h2 span { color: var(--blue); }
+  #s6 p { font-size:17px; color:var(--muted); max-width:520px; line-height:1.8; margin-bottom:40px; }
+  #s6 .cta-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    color: #fff; font-weight: 700; font-size: 15px;
+    padding: 16px 40px; border-radius: 100px;
+    text-decoration: none; letter-spacing: .04em;
+    box-shadow: 0 0 40px rgba(26,86,255,.4);
+    transition: transform .2s, box-shadow .2s;
+    cursor: default;
+  }
+  #s6 .cta-btn:hover { transform: scale(1.04); box-shadow: 0 0 60px rgba(26,86,255,.6); }
+
+  /* ── NAVIGATION ── */
+  #nav {
+    position: fixed; bottom: 36px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 16px; z-index: 100;
+  }
+  .nav-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+    color: #fff; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, border-color .2s;
+    backdrop-filter: blur(8px);
+  }
+  .nav-btn:hover { background: var(--blue); border-color: var(--blue); }
+  .nav-btn:disabled { opacity: .3; cursor: default; }
+
+  #dots { display: flex; gap: 8px; align-items: center; }
+  .dot-item {
+    width: 8px; height: 8px; border-radius: 4px;
+    background: rgba(255,255,255,.25);
+    cursor: pointer; transition: width .3s, background .3s;
+  }
+  .dot-item.active { width: 28px; background: var(--cyan); }
+
+  /* ── SLIDE COUNTER ── */
+  #counter {
+    position: fixed; top: 32px; right: 40px;
+    font-size: 12px; color: var(--muted); letter-spacing: .08em;
+    font-weight: 500; z-index: 100;
+  }
+
+  /* ── LOGO ── */
+  #logo {
+    position: fixed; top: 28px; left: 40px;
+    font-size: 13px; font-weight: 700; letter-spacing: .15em;
+    color: rgba(255,255,255,.5); z-index: 100; text-transform: uppercase;
+  }
+  #logo span { color: var(--cyan); }
+
+  /* ── PROGRESS BAR ── */
+  #progress {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+    transition: width .4s ease; z-index: 200;
+  }
+
+  /* hint */
+  #hint {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; color: rgba(255,255,255,.25); letter-spacing: .08em;
+    animation: fadeHint 3s ease 2s forwards;
+    opacity: 0;
+  }
+  @keyframes fadeHint { 0%{opacity:.7} 100%{opacity:0} }
+
+  @media (max-width: 768px) {
+    .slide { padding: 40px 24px; }
+    #s2 .inner, #s4 .inner { grid-template-columns: 1fr; gap: 30px; }
+    #s3 .pillars { grid-template-columns: 1fr 1fr; }
+    #s5 .road { flex-wrap: wrap; }
+    #s5 .road::before { display: none; }
+    .step { flex: 0 0 50%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="logo">CĐS <span>·</span> 2025</div>
+<div id="counter">01 / 06</div>
+
+<div id="deck">
+
+  <!-- SLIDE 1: COVER -->
+  <section class="slide active" id="s1">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="eyebrow">Xu hướng chiến lược · Doanh nghiệp Việt Nam</div>
+    <h1>Chuyển Đổi<br><span>Số</span></h1>
+    <p class="sub">Hành trình tái định hình doanh nghiệp trong kỷ nguyên công nghệ số — cơ hội và thách thức</p>
+  </section>
+
+  <!-- SLIDE 2: WHAT IS -->
+  <section class="slide" id="s2">
+    <div class="inner">
+      <div class="left">
+        <h2>Chuyển đổi số<br>là <em>gì</em>?</h2>
+        <p>Chuyển đổi số không chỉ là áp dụng công nghệ mới — đó là sự thay đổi toàn diện về mô hình kinh doanh, quy trình vận hành và văn hóa tổ chức để tạo ra giá trị bền vững trong môi trường số.</p>
+      </div>
+      <div class="right">
+        <div class="def-card">
+          <div class="icon">🔄</div>
+          <strong>Tái cấu trúc quy trình</strong>
+          <span>Số hóa và tự động hóa các quy trình thủ công để tăng hiệu suất và giảm chi phí vận hành.</span>
+        </div>
+        <div class="def-card">
+          <div class="icon">💡</div>
+          <strong>Đổi mới mô hình kinh doanh</strong>
+          <span>Tạo ra các nguồn doanh thu mới và mô hình phục vụ khách hàng thông qua nền tảng số.</span>
+        </div>
+        <div class="def-card">
+          <div class="icon">🧠</div>
+          <strong>Văn hóa dữ liệu</strong>
+          <span>Ra quyết định dựa trên dữ liệu thực, thay thế cho trực giác và kinh nghiệm đơn thuần.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: PILLARS -->
+  <section class="slide" id="s3">
+    <h2>4 Trụ Cột Cốt Lõi</h2>
+    <p class="tagline">Nền tảng xây dựng chiến lược chuyển đổi số thành công</p>
+    <div class="pillars">
+      <div class="pillar">
+        <div class="num">01</div>
+        <div class="ico">☁️</div>
+        <h3>Điện toán đám mây</h3>
+        <p>Hạ tầng linh hoạt, mở rộng theo nhu cầu, tiết kiệm chi phí đầu tư ban đầu.</p>
+      </div>
+      <div class="pillar">
+        <div class="num">02</div>
+        <div class="ico">📊</div>
+        <h3>Dữ liệu lớn & AI</h3>
+        <p>Khai thác insight từ dữ liệu khổng lồ, tự động hóa phân tích và dự đoán.</p>
+      </div>
+      <div class="pillar">
+        <div class="num">03</div>
+        <div class="ico">🔐</div>
+        <h3>An toàn thông tin</h3>
+        <p>Bảo vệ tài sản số, xây dựng niềm tin với khách hàng và đối tác.</p>
+      </div>
+      <div class="pillar">
+        <div class="num">04</div>
+        <div class="ico">📱</div>
+        <h3>Trải nghiệm số</h3>
+        <p>Thiết kế hành trình khách hàng liền mạch trên mọi kênh số.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: BENEFITS -->
+  <section class="slide" id="s4">
+    <div class="inner">
+      <div class="left">
+        <h2>Lợi ích<br><em>thực tế</em><br>đo được</h2>
+        <p>Các doanh nghiệp đã chuyển đổi số thành công ghi nhận mức tăng trưởng vượt trội so với đối thủ chưa chuyển đổi, với hiệu quả được đo lường rõ ràng trên nhiều chỉ số.</p>
+      </div>
+      <div class="right">
+        <div class="stat-card">
+          <div class="val">3.5×</div>
+          <div class="lbl">Tăng trưởng doanh thu so với doanh nghiệp chưa số hóa</div>
+        </div>
+        <div class="stat-card">
+          <div class="val">40%</div>
+          <div class="lbl">Giảm chi phí vận hành nhờ tự động hóa quy trình</div>
+        </div>
+        <div class="stat-card">
+          <div class="val">60%</div>
+          <div class="lbl">Cải thiện tốc độ phục vụ và sự hài lòng khách hàng</div>
+        </div>
+        <div class="stat-card">
+          <div class="val">2×</div>
+          <div class="lbl">Năng suất nhân viên khi có công cụ số hỗ trợ</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: ROADMAP -->
+  <section class="slide" id="s5">
+    <h2>Lộ Trình Triển Khai</h2>
+    <p class="tagline">5 giai đoạn để dẫn đầu cuộc chơi số</p>
+    <div class="road">
+      <div class="step">
+        <div class="dot">🔍</div>
+        <h4>Đánh giá hiện trạng</h4>
+        <p>Khảo sát năng lực số, xác định khoảng cách cần lấp đầy</p>
+      </div>
+      <div class="step">
+        <div class="dot">🗺️</div>
+        <h4>Xây dựng chiến lược</h4>
+        <p>Định hướng dài hạn, ưu tiên lĩnh vực tác động cao</p>
+      </div>
+      <div class="step">
+        <div class="dot">⚙️</div>
+        <h4>Xây nền tảng hạ tầng</h4>
+        <p>Cloud, dữ liệu, bảo mật — móng nhà vững chắc</p>
+      </div>
+      <div class="step">
+        <div class="dot">🚀</div>
+        <h4>Triển khai & thử nghiệm</h4>
+        <p>Agile theo từng sprint, đo lường và điều chỉnh liên tục</p>
+      </div>
+      <div class="step">
+        <div class="dot">📈</div>
+        <h4>Mở rộng & tối ưu</h4>
+        <p>Scale up thành công, nhân rộng mô hình toàn tổ chức</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: CTA -->
+  <section class="slide" id="s6">
+    <div class="orb3"></div>
+    <div class="badge">✦ Thời điểm hành động là ngay bây giờ</div>
+    <h2>Dẫn đầu hay<br>bị bỏ <span>lại phía sau</span>?</h2>
+    <p>Chuyển đổi số không phải lựa chọn — đó là điều kiện sống còn. Mỗi ngày trì hoãn là một ngày đối thủ tiến xa hơn.</p>
+    <div class="cta-btn">Bắt đầu hành trình của bạn →</div>
+  </section>
+
+</div>
+
+<!-- NAVIGATION -->
+<div id="nav">
+  <button class="nav-btn" id="prevBtn" aria-label="Slide trước" disabled>‹</button>
+  <div id="dots"></div>
+  <button class="nav-btn" id="nextBtn" aria-label="Slide tiếp theo">›</button>
+</div>
+
+<div id="hint">← → Dùng phím mũi tên để điều hướng</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let current = 0;
+  let animating = false;
+
+  const dotsEl = document.getElementById('dots');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot-item' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => goTo(i));
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(idx) {
+    if (idx === current || animating || idx < 0 || idx >= total) return;
+    animating = true;
+
+    const prev = slides[current];
+    prev.classList.add('out');
+    setTimeout(() => { prev.classList.remove('active', 'out'); }, 500);
+
+    slides[idx].classList.add('active');
+    current = idx;
+    updateUI();
+    setTimeout(() => { animating = false; }, 560);
+  }
+
+  function updateUI() {
+    // dots
+    document.querySelectorAll('.dot-item').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+    // counter
+    counter.textContent = String(current + 1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+    // buttons
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+    // progress
+    progress.style.width = ((current + 1) / total * 100) + '%';
+  }
+
+  prevBtn.addEventListener('click', () => goTo(current - 1));
+  nextBtn.addEventListener('click', () => goTo(current + 1));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(current - 1);
+  });
+
+  // touch / swipe
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend',   e => {
+    const dx = tx - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 50) dx > 0 ? goTo(current + 1) : goTo(current - 1);
+  });
+
+  updateUI();
+
+  // show hint
+  document.getElementById('hint').style.opacity = '.7';
+</script>
+</body>
+</html>
